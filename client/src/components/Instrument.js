@@ -54,18 +54,32 @@ const Edit = ({song, setSongs, instrument, setEdit}) => {
     const [type, setType] = useState(instrument.type);
     const [ampSetting, setAmpSetting] = useState(instrument.ampSetting);
     const [instrumentSetting, setInstrumentSetting] = useState(instrument.instrumentSetting);
+    const [deleteAmpSetting, setDeleteAmpSetting] = useState(false);
+    const [deleteInstrumentSetting, setDeleteInstrumentSetting] = useState(false);
 
     const typeOptions = ['Rhythm', 'Lead', 'Bass', 'Drums', 'Keyboard', 'Vocals'];
+
+    const onDeleteSetting = async (setting) => {
+        if (setting !== 'Amp' && setting !== 'Instrument') return;
+        else if (setting === 'Amp' && instrument.ampSetting === 'false') return;
+        else if (setting === 'Instrument' && instrument.instrumentSetting === 'false') return;
+
+        try {
+            const res = await axios.delete(`/api/${song._id}/${instrument._id}/delete${setting}Setting`);
+            setSongs(res.data);
+        } catch (err) {
+            console.log(err);
+        }
+    }
 
     const onSubmit = async () => {
         if (name === '' || type === '') return;
         else if (name.length > 0) {
 
             let ampSettingBool = 'false'; let instrumentSettingBool = 'false';
-            if (ampSetting && ampSetting !== 'false') ampSettingBool = ampSetting.name; 
-            if (instrumentSetting && instrumentSetting !== 'false') instrumentSettingBool = instrumentSetting.name;
 
-            console.log(ampSettingBool, instrumentSetting);
+            if (ampSetting && ampSetting !== 'false' && ampSetting !== 'delete') ampSettingBool = ampSetting.name;
+            if (instrumentSetting && instrumentSetting !== 'false' && instrumentSetting !== 'delete') instrumentSettingBool = instrumentSetting.name; 
 
             const submitData = {
                 name: name,
@@ -75,11 +89,23 @@ const Edit = ({song, setSongs, instrument, setEdit}) => {
             }
 
             try {
+                if (deleteAmpSetting) onDeleteSetting('Amp');
+                if (deleteInstrumentSetting) onDeleteSetting('Instrument');
+
                 const res = await axios.patch(`/api/${song._id}/${instrument._id}/editInstrument`, submitData);
                 setSongs(res.data);
                 setEdit(false);
 
-                if (ampSettingBool !== 'false') {
+                try {
+                    if (ampSetting.name.split('.')[0] === instrument.ampSetting) ampSettingBool = 'false'
+                } catch (err) { ampSettingBool = 'false' }
+
+                try {
+                    if (instrumentSetting.name.split('.')[0] === instrument.instrumentSetting) instrumentSettingBool = 'false'
+                } catch (err) { instrumentSettingBool = 'false' }
+
+                if (ampSettingBool !== 'false' && ampSetting !== 'delete') {
+
                     let song = res.data.find(song => song._id === song._id);
                     let instrument = song.instruments.find(instrument => instrument._id === song.instruments[song.instruments.length - 1]._id);
     
@@ -94,7 +120,8 @@ const Edit = ({song, setSongs, instrument, setEdit}) => {
                     });
                 }
     
-                if (instrumentSettingBool !== 'false') {
+                if (instrumentSettingBool !== 'false' && instrumentSetting !== 'delete') {
+
                     let song = res.data.find(song => song._id === song._id);
                     let instrument = song.instruments.find(instrument => instrument._id === song.instruments[song.instruments.length - 1]._id);
     
@@ -109,12 +136,14 @@ const Edit = ({song, setSongs, instrument, setEdit}) => {
                     });
                 }
 
-                setName(''); setType(''); setAmpSetting(''); setInstrumentSetting('');
+                setName(''); setType(''); setAmpSetting(''); setInstrumentSetting(''); setDeleteAmpSetting(false); setDeleteInstrumentSetting(false);
             } catch (err) {
                 console.log(err);
             }
         }
     }
+
+
 
     return(
         <div className="edit-instrument">
@@ -137,17 +166,33 @@ const Edit = ({song, setSongs, instrument, setEdit}) => {
                     </select>
                 </div>
 
-                <div className = "form-amp">
-                    <label>Amp Setting</label>
-                    <input id='amp-setting' type="file" onChange={event => setAmpSetting(event.target.files[0])}/>
-                </div>
+                {ampSetting !== 'false' && ampSetting !== 'delete' ? (
+                    <div className = "form-amp">
+                        <label>Amp Setting</label>
+                        <button className="delete-amp-setting" type='button' onClick={() => {setDeleteAmpSetting(true); setAmpSetting('delete')}}>Delete file</button>
+                    </div>
+                ) : ( 
+                    <div className = "form-amp">
+                        <label>Amp Setting</label>
+                        <input id='amp-setting' type="file" onChange={event => setAmpSetting(event.target.files[0])}/>
+                    </div>
+                )}
 
-                <div className = "form-instrument">
-                    <label>Inst. Setting</label>
-                    <input id = 'instrument-setting' type="file" onChange={event => setInstrumentSetting(event.target.files[0])}/>
-                </div>
+                { instrumentSetting !== 'false' && instrumentSetting !== 'delete' ? (
+                    <div className = "form-instrument">
+                        <label>Inst. Setting</label>
+                        <button id='delete-instrument-setting' type='button' onClick={() => {setDeleteInstrumentSetting(true); setInstrumentSetting('delete')}}>Delete file</button>
+                    </div>
+                ) : (
+                    <div className = "form-instrument">
+                        <label>Inst. Setting</label>
+                        <input id='instrument-setting' type="file" onChange={event => setInstrumentSetting(event.target.files[0])}/>
+                    </div>
+                )}
 
-                <button type="button" onClick={() => onSubmit()}><img src={editIcon} alt="edit"/></button>
+
+
+                <button className = "edit-submit" type="button" onClick={() => onSubmit()}><img src={editIcon} alt="edit"/></button>
             </form>
         </div>
     )
@@ -161,7 +206,7 @@ const DisplaySetting = ({song, instrument, displaySetting, setDisplaySetting}) =
             return `http://127.0.0.1:8080/uploads/${song._id}/${instrument._id}-ampSetting.${fileExtension}`
         }
         else if (displaySetting === 'instrument') {
-            let fileExtension = instrument.ampSetting.split('.').pop();
+            let fileExtension = instrument.instrumentSetting.split('.').pop();
             return `http://127.0.0.1:8080/uploads/${song._id}/${instrument._id}-instrumentSetting.${fileExtension}`
         }
     }
@@ -180,6 +225,7 @@ const Instrument = ({song, setSongs, instrument}) => {
     const instrumentImageMap = {'Lead': leadIcon, 'Drums': drumsIcon};
     const [edit, setEdit] = useState(false);
     const [displaySetting, setDisplaySetting] = useState('');
+    const [progress, setProgress] = useState(instrument.progress);
 
     const onOpenAmpSetting = () => {
         if (instrument.ampSetting === 'false') return;
@@ -188,6 +234,34 @@ const Instrument = ({song, setSongs, instrument}) => {
         setDisplaySetting('amp');
     }
 
+    const onOpenInstrumentSetting = () => {
+        if (instrument.instrumentSetting === 'false') return;
+        else if (displaySetting !== '') return;
+
+        setDisplaySetting('instrument');
+    }
+
+    const editProgess = async () => {
+        try {
+            const res = await axios.patch(`/api/${song._id}/${instrument._id}/editProgress`, {progress: progress});
+            setSongs(res.data);
+
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    const getProgressColor = (value) => {
+        let color = '#7ec973'
+
+        if (value < 30) color = '#ffa996'
+        else if (value < 65) color = '#ffcc96'
+
+        return color;
+    }
+
+    const [progressStyle, setProgressStyle] = useState({ background: `linear-gradient(to right, ${getProgressColor(progress)} ${instrument.progress}%, #d1d1d1 ${instrument.progress}%)` });
+
     return (
         <div className="instrument-container">
 
@@ -195,12 +269,19 @@ const Instrument = ({song, setSongs, instrument}) => {
             <div className="show-instrument">
                 <img className="instrument-icon" src={instrumentImageMap[instrument.type]} alt={instrument.type}/>
                 <h5>{instrument.name}</h5>
-                <input className="progress-slider" defaultValue={instrument.progress} id={`progress-slider-${instrument._id}`} type="range" min="0" max="100" style={{background: `linear-gradient(to right, #7ec973 ${instrument.progress}%, #d1d1d1 ${instrument.progress}%)`}}
+
+                <input className="progress-slider" defaultValue={instrument.progress} id={`progress-slider-${instrument._id}`} type="range" min="0" max="100" style={progressStyle}
                     onChange={e => {
                         let slider = e.target;
-                        let style = `linear-gradient(to right, #7ec973 ${slider.value}%, #d1d1d1 ${slider.value}%)`
-                        slider.style.background = style;
+                        let value = slider.value;
+                        let color = getProgressColor(value);
+
+                        let style = {background: `linear-gradient(to right, ${color} ${slider.value}%, #d1d1d1 ${slider.value}%)`}
+                        setProgressStyle(style);   
+                        setProgress(value);
                     }}
+                    onMouseUp={() => editProgess()}
+                    onTouchEnd={() => editProgess()}
                 />
 
                 { instrument.ampSetting !== 'false' ? (
@@ -208,7 +289,7 @@ const Instrument = ({song, setSongs, instrument}) => {
                 ) : ( <img className="amp-setting" style={{opacity:0}} src={ampIcon} alt="amp-setting"/> )}
 
                 { instrument.instrumentSetting !== 'false' ? (
-                <button className="instrument-setting"><img  src={ampIcon} alt="instrument-setting"/></button>
+                <button className="instrument-setting"><img  src={ampIcon} alt="instrument-setting" onClick={() => onOpenInstrumentSetting()}/></button>
                 ) : ( <img className="instrument-setting" style={{opacity:0}} src={ampIcon} alt="instrument-setting"/> )}
 
                 <Menu song={song} setSongs={setSongs} instrument={instrument} setEdit={setEdit}/>

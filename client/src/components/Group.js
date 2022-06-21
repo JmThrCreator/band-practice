@@ -33,7 +33,7 @@ const Form = ({setSongs, group}) => {
             <div className = "add-song-form">
                 <div className={open ? 'open' : 'closed'}>
                     <input type="text" value={name} placeholder="Song name" onChange={e => setName(e.target.value)} />
-                    <button type="button" onClick={() => onSubmit()}>Add</button>
+                    <button type="button" onClick={() => onSubmit()}>Add song</button>
                 </div>
             </div>
         </>

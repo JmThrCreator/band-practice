@@ -103,13 +103,13 @@ router.post('/:song/:instrument/addInstrumentSetting', async (req, res) => {
 });
 
 // UPDATE song in group
-router.patch('/:group/:id/editSong', async (req, res) => {
+router.patch('/:group/:song/editSong', async (req, res) => {
     try {
         if (req.body.name) {
-            await Song.findOneAndUpdate({ _id: req.params.id }, { name: req.body.name });
+            await Song.findOneAndUpdate({ _id: req.params.song }, { name: req.body.name });
         }
         else if (req.body.group) {
-            await Song.findOneAndUpdate({ _id: req.params.id }, { group: req.body.group });
+            await Song.findOneAndUpdate({ _id: req.params.song }, { group: req.body.group });
         }
         const songs = await Song.find();
         res.json(songs);
@@ -138,10 +138,29 @@ router.patch('/:song/:instrument/editInstrument', async (req, res) => {
     }
 });
 
-// DELETE song from group
-router.delete('/:group/:id/deleteSong', async (req, res) => {
+// UPDATE progress
+router.patch('/:song/:instrument/editProgress', async (req, res) => {
     try {
-        await Song.findByIdAndDelete(req.params.id);
+        const song = await Song.findById(req.params.song);
+        const instrument = song.instruments.id(req.params.instrument);
+        instrument.progress = req.body.progress;
+        await song.save();
+        
+        const songs = await Song.find();
+        res.json(songs);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// DELETE song from group
+router.delete('/:group/:song/deleteSong', async (req, res) => {
+    try {
+        if (fs.existsSync(`./uploads/${req.params.song}`)) {
+            fs.rmdirSync(`./uploads/${req.params.song}`, { recursive: true });
+        }
+
+        await Song.findByIdAndDelete(req.params.song);
         const songs = await Song.find();
         res.json(songs);
     } catch (err) {
@@ -153,10 +172,73 @@ router.delete('/:group/:id/deleteSong', async (req, res) => {
 router.delete('/:song/:instrument/deleteInstrument', async (req, res) => {
     try {
         const song = await Song.findById(req.params.song);
-        song.instruments.id(req.params.instrument).remove();
+        const instrument = song.instruments.id(req.params.instrument);
+        instrument.remove();
+
+        fileExtension = instrument.ampSetting.split('.').pop();
+        if (fs.existsSync(`./uploads/${req.params.song}/${req.params.instrument}-ampSetting.${fileExtension}`)) {
+            fs.unlinkSync(`./uploads/${song._id}/${instrument._id}-ampSetting.${fileExtension}`, err => {
+                if (err) return res.status(500).send(err);
+            });
+        }
+
+        fileExtension = instrument.instrumentSetting.split('.').pop();
+        if (fs.existsSync(`./uploads/${req.params.song}/${req.params.instrument}-instrumentSetting.${fileExtension}`)) {
+            fs.unlinkSync(`./uploads/${song._id}/${instrument._id}-instrumentSetting.${fileExtension}`, err => {
+                if (err) return res.status(500).send(err);
+            });
+        }
+
+        await song.save();
+        const songs = await Song.find();
+
+        res.json(songs);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// DELETE ampSetting
+router.delete('/:song/:instrument/deleteAmpSetting', async (req, res) => {
+    try {
+        const song = await Song.findById(req.params.song);
+        const instrument = song.instruments.id(req.params.instrument);
+
+        const fileExtension = instrument.ampSetting.split('.').pop();
+
+        fs.unlinkSync(`./uploads/${song._id}/${instrument._id}-ampSetting.${fileExtension}`, err => {
+            if (err) return res.status(500).send(err);
+        });
+
+        instrument.ampSetting = 'false';
+
         await song.save();
         const songs = await Song.find();
         res.json(songs);
+
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// DELETE instrumentSetting
+router.delete('/:song/:instrument/deleteInstrumentSetting', async (req, res) => {
+    try {
+        const song = await Song.findById(req.params.song);
+        const instrument = song.instruments.id(req.params.instrument);
+
+        const fileExtension = instrument.instrumentSetting.split('.').pop();
+
+        fs.unlinkSync(`./uploads/${song._id}/${instrument._id}-instrumentSetting.${fileExtension}`, err => {
+            if (err) return res.status(500).send(err);
+        });
+
+        instrument.instrumentSetting = 'false';
+        
+        await song.save();
+        const songs = await Song.find();
+        res.json(songs);
+
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

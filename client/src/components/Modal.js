@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDom from 'react-dom';
 
 import leadIcon from '../icons/lead.svg';
@@ -119,7 +119,7 @@ const Form = ({setSongs, song}) => {
                     </div>
 
 
-                    <button type="button" onClick={() => onSubmit()}>Add</button>
+                    <button type="button" onClick={() => onSubmit()}>Add instrument</button>
                 </div>
             </div>
         </>
@@ -127,11 +127,28 @@ const Form = ({setSongs, song}) => {
 }
 
 const Modal = ({song, setSongs, open, setOpen}) => {
+
+    useEffect(() => {
+
+        let handler = (e) => {
+            
+            if (e.target.id === 'overlay') setOpen(false);
+            else return;
+        }
+
+        document.addEventListener('click', handler);
+
+        return () => {
+            document.removeEventListener('click', handler);
+        }
+
+    });
+
     if (!open) return null;
 
     return ReactDom.createPortal(
         <>
-            <div className='overlay'>
+            <div id='overlay' className='overlay'>
                 <div className='modal'>
                     <div className='modal-header'>
                         <h2>{song.name}</h2>
