@@ -2,6 +2,7 @@ body {
     background-image: url('/images/background.png');
     background-size: fill;
     background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 
 // Group
@@ -25,7 +26,6 @@ body {
     padding: 15px 20px;
     
     border-radius: 5px;
-    background-color: rgba(138, 137, 172, 0.5);
 
     transition: height ease-in-out 0.3s;
 

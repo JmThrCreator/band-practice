@@ -46,7 +46,7 @@ const Group = ({group, songs, setSongs}) => {
         <Droppable droppableId={group.name} key={group.id}>
             {(provided, snapshot) => {
                 return (
-                    <div className="group" ref={provided.innerRef} {...provided.droppableProps} style={{background: snapshot.isDraggingOver ? 'rgb(210, 210, 210, 0.9)' : 'rgb(231, 231, 231, 0.9)'}}>
+                    <div className="group" ref={provided.innerRef} {...provided.droppableProps} style={{background: snapshot.isDraggingOver ? 'rgb(210, 210, 210, 1)' : 'rgb(225, 225, 225, 1)'}}>
                         
                         <div className="group-header">
                             {group.name}
