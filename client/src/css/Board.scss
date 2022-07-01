@@ -562,15 +562,13 @@ body {
 
     border-bottom: 1px solid #d8d8d8;
 
-    img {
+    .instrument-icon {
+        grid-area: 1 / 1 / span 2;
+
         width: 50px;
         height: 50px;
 
         margin: auto 5px;
-    }
-
-    .instrument-icon {
-        grid-area: 1 / 1 / span 2;
     }
 
     h5 {
@@ -659,10 +657,18 @@ body {
         justify-content: center;
 
         margin-left: 5px;
+        margin-top: 5px;
 
         background-color: transparent;
 
         cursor: pointer;
+
+        img {
+            width: 40px;
+            height: 43px;
+    
+            margin: auto 5px;
+        }
     }
 }
 

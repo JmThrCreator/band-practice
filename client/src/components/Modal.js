@@ -8,7 +8,7 @@ import Instrument from './Instrument';
 
 import axios from 'axios';
 
-const Form = ({setSongs, song}) => {
+const Form = ({code, setSongs, song}) => {
 
     const [open, setOpen] = useState(false);
     
@@ -17,13 +17,13 @@ const Form = ({setSongs, song}) => {
     const [ampSetting, setAmpSetting] = useState('');
     const [instrumentSetting, setInstrumentSetting] = useState('');
 
-    const typeOptions = ['Rhythm', 'Lead', 'Bass', 'Drums', 'Keyboard', 'Vocals'];
+    const typeOptions = ['Rhythm', 'Lead', 'Bass', 'Drums', 'Keyboard', 'Vocals', 'Wind'];
 
     const onSubmit = async () => {
         if (name === '' || type === '') return;
 
         let ampSettingName = 'false'; let instrumentSettingName = 'false';
-        if (ampSetting) ampSettingName = ampSetting.name; if (instrumentSetting) instrumentSettingName = ampSetting.name;
+        if (ampSetting) ampSettingName = ampSetting.name; if (instrumentSetting) instrumentSettingName = instrumentSetting.name;
 
         const submitData = {
             name: name,
@@ -33,7 +33,7 @@ const Form = ({setSongs, song}) => {
         }
 
         try {
-            const res = await axios.post(`/api/${song._id}/addInstrument`, submitData);
+            const res = await axios.post(`/api/${code}/${song._id}/addInstrument`, submitData);
 
             setSongs(res.data);
             setOpen(false);
@@ -46,7 +46,7 @@ const Form = ({setSongs, song}) => {
 
                 formData.append('file', ampSetting);
 
-                axios.post(`/api/${song._id}/${instrument._id}/addAmpSetting`, formData, {
+                axios.post(`/api/${code}/${song._id}/${instrument._id}/addAmpSetting`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
@@ -61,7 +61,7 @@ const Form = ({setSongs, song}) => {
 
                 formData.append('file', instrumentSetting);
 
-                axios.post(`/api/${song._id}/${instrument._id}/addInstrumentSetting`, formData, {
+                axios.post(`/api/${code}/${song._id}/${instrument._id}/addInstrumentSetting`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
@@ -126,7 +126,7 @@ const Form = ({setSongs, song}) => {
     )
 }
 
-const Modal = ({song, setSongs, open, setOpen}) => {
+const Modal = ({code, song, setSongs, open, setOpen}) => {
 
     useEffect(() => {
 
@@ -163,12 +163,12 @@ const Modal = ({song, setSongs, open, setOpen}) => {
 
                     <div className='modal-body'>
                         {song.instruments.map((instrument) => (
-                            <Instrument key={instrument._id} song={song} setSongs={setSongs} instrument={instrument} />
+                            <Instrument key={instrument._id} code={code} song={song} setSongs={setSongs} instrument={instrument} />
                         ))}
                     </div>
 
                     <div className="instrument-footer">
-                        <Form setSongs={setSongs} song={song}/>
+                        <Form code={code} setSongs={setSongs} song={song}/>
                     </div>
 
                 </div>

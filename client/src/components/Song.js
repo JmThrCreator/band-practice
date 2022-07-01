@@ -6,7 +6,7 @@ import axios from 'axios';
 
 import editIcon from '../icons/edit.svg';
 
-const Song = ({song, setSongs, group, songs}) => {
+const Song = ({code, song, setSongs, group, songs}) => {
 
     const [edit, setEdit] = useState(false);
     const [open, setOpen] = useState(false);
@@ -25,16 +25,16 @@ const Song = ({song, setSongs, group, songs}) => {
                 <button key={song._id} className="song">
                     {song.name} 
                 </button>
-                <Menu group={group} song={song} setEdit={setEdit} setSongs={setSongs}/>
+                <Menu code={code} group={group} song={song} setEdit={setEdit} setSongs={setSongs}/>
             </div>
         ):(
             <div className="song-edit">
-                <Edit song={song} setSongs={setSongs} group={group} setEdit={setEdit} songs={songs}/>
+                <Edit code={code} song={song} setSongs={setSongs} group={group} setEdit={setEdit} songs={songs}/>
             </div>
         )}
 
         { open === true ? (
-            <Modal song={song} setSongs={setSongs} open={open} setOpen={setOpen}/>
+            <Modal code={code} song={song} setSongs={setSongs} open={open} setOpen={setOpen}/>
         ):(
             null
         )}
@@ -43,7 +43,7 @@ const Song = ({song, setSongs, group, songs}) => {
     )
 }
 
-const Menu = ({group, song, setEdit, setSongs}) => {
+const Menu = ({code, group, song, setEdit, setSongs}) => {
 
     const [open, setOpen] = useState(false);
 
@@ -64,7 +64,7 @@ const Menu = ({group, song, setEdit, setSongs}) => {
 
     const onDelete = async () => {
         try {
-            const res = await axios.delete(`/api/${group.name}/${song._id}/deleteSong`);
+            const res = await axios.delete(`/api/${code}/${song._id}/deleteSong`);
             setSongs(res.data);
         } catch (err) {
             console.log(err);
@@ -83,7 +83,7 @@ const Menu = ({group, song, setEdit, setSongs}) => {
     )
 }
 
-const Edit = ({song, setSongs, group, setEdit, songs}) => {
+const Edit = ({code, song, setSongs, group, setEdit, songs}) => {
     
     const [name, setName] = useState(song.name);
 
@@ -93,7 +93,7 @@ const Edit = ({song, setSongs, group, setEdit, songs}) => {
         }
         else if (name.length > 0) {
             try {
-                const res = await axios.patch(`/api/${group.name}/${song._id}/editSong`, {name: name});
+                const res = await axios.patch(`/api/${code}/${song._id}/editSong`, {name: name});
                 setSongs(res.data);
             } catch (err) {
                 console.log(err);

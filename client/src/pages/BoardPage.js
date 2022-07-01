@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DragDropContext } from 'react-beautiful-dnd';
+import { useParams } from "react-router-dom";
 
 import Group from '../components/Group';
 
@@ -9,16 +10,18 @@ import axios from 'axios';
 
 const BoardPage = () => {
 
+  const { code } = useParams();
+  const [validCode, setValidCode] = useState(true)
   const groups = [{ id:1, name:"Learned"}, {id:2, name:"Practice"}, {id:3, name:"Learn"}, {id:4, name:"Suggestions"}];
   const [songs, setSongs] = useState([]);
 
   useEffect (() => {
     const getSongs = async () => {
       try {
-        const res = await axios.get(`/api/songs`);
+        const res = await axios.get(`/api/${ code }/songs`);
         setSongs(res.data);
       } catch (err) {
-        console.log(err);
+        if (err.response.data.message === "code not found") setValidCode(false)
       }
     }
     getSongs();
@@ -41,7 +44,7 @@ const BoardPage = () => {
       song.group = group;
       setSongs([...songs]);
       try {
-        await axios.patch(`/api/${group}/${sourceId}/editSong`, {group: group});
+        await axios.patch(`/api/${code}/${sourceId}/editSong`, {group: group});
       } catch (err) {
         console.log(err);
       }
@@ -50,13 +53,17 @@ const BoardPage = () => {
   
   return (
     <div className="board">
-      <div className = "groups">
-        <DragDropContext onDragEnd={(e) => onDragEnd(e)}>
-          {groups.map(group => (
-            <Group key={group.id} group={group} songs={filterSongs(group)} setSongs={setSongs} />
-          ))}
-        </DragDropContext>
-      </div>
+      { validCode === true ? (       
+        <div className = "groups">
+          <DragDropContext onDragEnd={(e) => onDragEnd(e)}>
+            {groups.map(group => (
+              <Group key={group.id} code={code} group={group} songs={filterSongs(group)} setSongs={setSongs} />
+            ))}
+          </DragDropContext>
+        </div>
+      ) : (
+        <p style={{color: "white"}}>Invalid code; board not found</p>
+      )}
     </div>
   )
 };

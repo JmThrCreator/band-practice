@@ -5,7 +5,7 @@ import axios from 'axios';
 
 import Song from './Song';
 
-const Form = ({setSongs, group}) => {
+const Form = ({code, setSongs, group}) => {
 
     const [name, setName] = useState('');
     const [open, setOpen] = useState(false);
@@ -13,7 +13,7 @@ const Form = ({setSongs, group}) => {
     const onSubmit = async () => {
         if (name.length > 0) {
             try {
-                const res = await axios.post(`/api/${group.name}/addSong`, {name: name});
+                const res = await axios.post(`/api/${code}/addSong`, {name: name, group: group.name});
                 setSongs(res.data);
                 setName('');
                 setOpen(false);
@@ -40,7 +40,7 @@ const Form = ({setSongs, group}) => {
     )
 }
 
-const Group = ({group, songs, setSongs}) => {
+const Group = ({code, group, songs, setSongs}) => {
 
     return (
         <Droppable droppableId={group.name} key={group.id}>
@@ -59,7 +59,7 @@ const Group = ({group, songs, setSongs}) => {
                                             {(provided, snapshot) => {
                                                 return (
                                                     <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>    
-                                                            <Song key={song._id} song={song} setSongs={setSongs} group={group} songs={songs}/>
+                                                            <Song key={song._id} code={code} song={song} setSongs={setSongs} group={group} songs={songs}/>
                                                     </div>
                                                 )
                                             }}
@@ -69,7 +69,7 @@ const Group = ({group, songs, setSongs}) => {
                         </div>
 
                         <div className="group-footer">
-                            <Form setSongs={setSongs} group={group} />
+                            <Form code={code} setSongs={setSongs} group={group} />
                         </div>
 
                         {provided.placeholder}

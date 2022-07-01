@@ -3,12 +3,19 @@ import ReactDom from 'react-dom';
 
 import leadIcon from '../icons/lead.svg';
 import drumsIcon from '../icons/drums.svg';
+import bassIcon from '../icons/bass.svg'
+import rhythmIcon from '../icons/rhythm.svg'
+import keyboardIcon from '../icons/keyboard.svg'
+import vocalsIcon from '../icons/vocals.svg'
+import windIcon from '../icons/wind.svg'
+
 import ampIcon from '../icons/amp.svg';
+import dialIcon from '../icons/dials.svg';
 import editIcon from '../icons/edit.svg';
 
 import axios from 'axios';
 
-const Menu = ({song, setSongs, instrument, setEdit}) => {
+const Menu = ({code, song, setSongs, instrument, setEdit}) => {
 
     const [open, setOpen] = useState(false);
 
@@ -29,7 +36,7 @@ const Menu = ({song, setSongs, instrument, setEdit}) => {
 
     const onDelete = async () => {
         try {
-            const res = await axios.delete(`/api/${song._id}/${instrument._id}/deleteInstrument`);
+            const res = await axios.delete(`/api/${code}/${song._id}/${instrument._id}/deleteInstrument`);
             setSongs(res.data);
         } catch (err) {
             console.log(err);
@@ -48,7 +55,7 @@ const Menu = ({song, setSongs, instrument, setEdit}) => {
     )
 }
 
-const Edit = ({song, setSongs, instrument, setEdit}) => {
+const Edit = ({code, song, setSongs, instrument, setEdit}) => {
 
     const [name, setName] = useState(instrument.name);
     const [type, setType] = useState(instrument.type);
@@ -57,7 +64,7 @@ const Edit = ({song, setSongs, instrument, setEdit}) => {
     const [deleteAmpSetting, setDeleteAmpSetting] = useState(false);
     const [deleteInstrumentSetting, setDeleteInstrumentSetting] = useState(false);
 
-    const typeOptions = ['Rhythm', 'Lead', 'Bass', 'Drums', 'Keyboard', 'Vocals'];
+    const typeOptions = ['Rhythm', 'Lead', 'Bass', 'Drums', 'Keyboard', 'Vocals', 'Wind'];
 
     const onDeleteSetting = async (setting) => {
         if (setting !== 'Amp' && setting !== 'Instrument') return;
@@ -65,7 +72,7 @@ const Edit = ({song, setSongs, instrument, setEdit}) => {
         else if (setting === 'Instrument' && instrument.instrumentSetting === 'false') return;
 
         try {
-            const res = await axios.delete(`/api/${song._id}/${instrument._id}/delete${setting}Setting`);
+            const res = await axios.delete(`/api/${code}/${song._id}/${instrument._id}/delete${setting}Setting`);
             setSongs(res.data);
         } catch (err) {
             console.log(err);
@@ -92,7 +99,7 @@ const Edit = ({song, setSongs, instrument, setEdit}) => {
                 if (deleteAmpSetting) onDeleteSetting('Amp');
                 if (deleteInstrumentSetting) onDeleteSetting('Instrument');
 
-                const res = await axios.patch(`/api/${song._id}/${instrument._id}/editInstrument`, submitData);
+                const res = await axios.patch(`/api/${code}/${song._id}/${instrument._id}/editInstrument`, submitData);
                 setSongs(res.data);
                 setEdit(false);
 
@@ -113,7 +120,7 @@ const Edit = ({song, setSongs, instrument, setEdit}) => {
     
                     formData.append('file', ampSetting);
     
-                    axios.post(`/api/${song._id}/${instrument._id}/addAmpSetting`, formData, {
+                    axios.post(`/api/${code}/${song._id}/${instrument._id}/addAmpSetting`, formData, {
                         headers: {
                             'Content-Type': 'multipart/form-data'
                         }
@@ -129,7 +136,7 @@ const Edit = ({song, setSongs, instrument, setEdit}) => {
     
                     formData.append('file', instrumentSetting);
     
-                    axios.post(`/api/${song._id}/${instrument._id}/addInstrumentSetting`, formData, {
+                    axios.post(`/api/${code}/${song._id}/${instrument._id}/addInstrumentSetting`, formData, {
                         headers: {
                             'Content-Type': 'multipart/form-data'
                         }
@@ -198,16 +205,16 @@ const Edit = ({song, setSongs, instrument, setEdit}) => {
     )
 }
 
-const DisplaySetting = ({song, instrument, displaySetting, setDisplaySetting}) => {
+const DisplaySetting = ({code, song, instrument, displaySetting, setDisplaySetting}) => {
 
     const getImage = () => {
         if (displaySetting === 'amp') {
             let fileExtension = instrument.ampSetting.split('.').pop();
-            return `http://127.0.0.1:8080/uploads/${song._id}/${instrument._id}-ampSetting.${fileExtension}`
+            return `http://127.0.0.1:8080/uploads/${code}/${song._id}/${instrument._id}-ampSetting.${fileExtension}`
         }
         else if (displaySetting === 'instrument') {
             let fileExtension = instrument.instrumentSetting.split('.').pop();
-            return `http://127.0.0.1:8080/uploads/${song._id}/${instrument._id}-instrumentSetting.${fileExtension}`
+            return `http://127.0.0.1:8080/uploads/${code}/${song._id}/${instrument._id}-instrumentSetting.${fileExtension}`
         }
     }
 
@@ -220,9 +227,9 @@ const DisplaySetting = ({song, instrument, displaySetting, setDisplaySetting}) =
     );
 }
 
-const Instrument = ({song, setSongs, instrument}) => {
+const Instrument = ({code, song, setSongs, instrument}) => {
 
-    const instrumentImageMap = {'Lead': leadIcon, 'Drums': drumsIcon};
+    const instrumentImageMap = {'Lead': leadIcon, 'Drums': drumsIcon, 'Bass': bassIcon, 'Rhythm': rhythmIcon, 'Keyboard': keyboardIcon, 'Vocals': vocalsIcon, 'Wind': windIcon};
     const [edit, setEdit] = useState(false);
     const [displaySetting, setDisplaySetting] = useState('');
     const [progress, setProgress] = useState(instrument.progress);
@@ -243,7 +250,7 @@ const Instrument = ({song, setSongs, instrument}) => {
 
     const editProgess = async () => {
         try {
-            const res = await axios.patch(`/api/${song._id}/${instrument._id}/editProgress`, {progress: progress});
+            const res = await axios.patch(`/api/${code}/${song._id}/${instrument._id}/editProgress`, {progress: progress});
             setSongs(res.data);
 
         } catch (err) {
@@ -289,17 +296,17 @@ const Instrument = ({song, setSongs, instrument}) => {
                 ) : ( <img className="amp-setting" style={{opacity:0}} src={ampIcon} alt="amp-setting"/> )}
 
                 { instrument.instrumentSetting !== 'false' ? (
-                <button className="instrument-setting"><img  src={ampIcon} alt="instrument-setting" onClick={() => onOpenInstrumentSetting()}/></button>
-                ) : ( <img className="instrument-setting" style={{opacity:0}} src={ampIcon} alt="instrument-setting"/> )}
+                <button className="instrument-setting"><img  src={dialIcon} alt="instrument-setting" onClick={() => onOpenInstrumentSetting()}/></button>
+                ) : ( <img className="instrument-setting" style={{opacity:0}} src={dialIcon} alt="instrument-setting"/> )}
 
-                <Menu song={song} setSongs={setSongs} instrument={instrument} setEdit={setEdit}/>
+                <Menu code={code} song={song} setSongs={setSongs} instrument={instrument} setEdit={setEdit}/>
             </div>
         ) : (
-            <Edit song={song} setSongs={setSongs} instrument={instrument} setEdit={setEdit}/>
+            <Edit code={code} song={song} setSongs={setSongs} instrument={instrument} setEdit={setEdit}/>
         )}
 
         { displaySetting !== '' ? (
-            <DisplaySetting song={song} instrument={instrument} displaySetting={displaySetting} setDisplaySetting={setDisplaySetting}/>
+            <DisplaySetting code={code} song={song} instrument={instrument} displaySetting={displaySetting} setDisplaySetting={setDisplaySetting}/>
         ) : (
             null
         )}

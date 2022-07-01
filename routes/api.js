@@ -1,72 +1,233 @@
 // REQUIRE
 const express = require('express');
 const fs = require('fs');
-const Song = require('../models/song');
+const Board = require('../models/board')
 
 // EXPRESS
 const router = express.Router();
 
-// GET all songs
-router.get('/songs', async (req, res) => {
+
+// GET board
+router.get('/:code/board', async (req, res) => {
     try {
-        const songs = await Song.find();
-        res.json(songs);
+        const board = await Board.findOne({code:req.params.code}).exec();
+
+        if (board === null) return res.status(400).json({ message: "board does not exist" });
+        else return res.json("valid")
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
 
-// GET all songs in group
-router.get('/:group/songs', async (req, res) => {
+// POST board
+router.post('/addBoard', async (req, res) => {
     try {
-        const songs = await Song.find({ group: req.params.group });
-        res.json(songs);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
+        const { code, email } = req.body;
 
-// POST song to group
-router.post('/:group/addSong', async (req, res) => {
-    try {
-        const { name } = req.body;
-        const song = new Song({
-            name,
-            group: req.params.group
+        const validEmail = await Board.findOne({email:email}).exec();
+
+        if (validEmail !== null) return res.status(400).json({ message: "email already in use" });
+
+        const board = new Board({
+            code,
+            email
         });
-        await song.save();
-        if (!fs.existsSync(`./uplaods/${req.params.song}`)) fs.mkdirSync(`./uploads/${song._id}`);
-        const songs = await Song.find();
+
+        const newBoard = await board.save();
+
+        if (!fs.existsSync(`./uploads/${newBoard.code}`)) fs.mkdirSync(`./uploads/${newBoard.code}`);
+
+        res.json("valid")
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+
+
+// GET songs
+router.get('/:code/songs', async (req, res) => {
+    try {
+        const board = await Board.findOne({ code: req.params.code })
+        if (!board) return res.status(400).json({ message: "code not found" });
+        const songs = board.songs;
         res.json(songs);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
+
+// POST song
+router.post('/:code/addSong', async (req, res) => {
+    try {
+        const { name, group } = req.body;
+
+        const board = await Board.findOne({ code: req.params.code });
+
+        board.songs.push({
+            name: name,
+            group: group
+        });
+
+        await board.save();
+        const songs = board.songs;
+
+        const song = board.songs.at(-1)
+
+        if (!fs.existsSync(`./uploads/${board.code}/${song._id}`)) fs.mkdirSync(`./uploads/${board.code}/${song._id}`);
+
+        res.json(songs);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// UPDATE song
+router.patch('/:code/:song/editSong', async (req, res) => {
+    try {
+        const board = await Board.findOne({ code: req.params.code })
+        const song = await board.songs.id( req.params.song )
+
+        if (req.body.name) {
+            song.name = req.body.name
+        }
+        else if (req.body.group) {
+            song.group = req.body.group
+        }
+
+        await board.save();
+        res.json(board.songs);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// DELETE song
+router.delete('/:code/:song/deleteSong', async (req, res) => {
+    try {
+        const board = await Board.findOne({ code: req.params.code })
+        const song = await board.songs.id( req.params.song )
+
+        song.remove();
+
+        if (fs.existsSync(`./uploads/${board.code}/${song._id}`)) fs.rmdirSync(`./uploads/${board.code}/${song._id}`, { recursive: true });
+        
+        await board.save();
+
+        const songs = board.songs;
+        res.json(songs);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+
 
 // POST instrument
-router.post('/:song/addInstrument', async (req, res) => {
+router.post('/:code/:song/addInstrument', async (req, res) => {
     try {
         const { name, type, ampSetting, instrumentSetting } = req.body;
         const progress = 0;
-        const song = await Song.findById(req.params.song);
-        song.instruments.push({
+
+        const board = await Board.findOne({ code: req.params.code })
+
+        console.log(instrumentSetting)
+
+        board.songs.id( req.params.song ).instruments.push ({
             name,
             type,
             progress,
             ampSetting,
             instrumentSetting
         });
-        await song.save();
-        const songs = await Song.find();
+
+        await board.save();
+        res.json(board.songs);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// UPDATE instrument 
+router.patch('/:code/:song/:instrument/editInstrument', async (req, res) => {
+    try {
+        const { name, type, ampSetting, instrumentSetting } = req.body;
+
+        const board = await Board.findOne({ code: req.params.code })
+        const song = await board.songs.id( req.params.song )
+        const instrument = song.instruments.id(req.params.instrument);
+        
+        if (name) instrument.name = name;
+        if (type) instrument.type = type;
+        if (ampSetting) instrument.ampSetting = ampSetting;
+        if (instrumentSetting) instrument.instrumentSetting = instrumentSetting;
+
+        await board.save();
+        res.json(board.songs);
+    }
+    catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// DELETE instrument
+router.delete('/:code/:song/:instrument/deleteInstrument', async (req, res) => {
+    try {
+
+        const board = await Board.findOne({ code: req.params.code })
+        const song = await board.songs.id( req.params.song )
+        const instrument = song.instruments.id(req.params.instrument);
+
+        instrument.remove();
+
+        fileExtension = instrument.ampSetting.split('.').pop();
+        if (fs.existsSync(`./uploads/${board.code}/${req.params.song}/${req.params.instrument}-ampSetting.${fileExtension}`)) {
+            fs.unlinkSync(`./uploads/${board.code}/${song._id}/${instrument._id}-ampSetting.${fileExtension}`, err => {
+                if (err) return res.status(500).send(err);
+            });
+        }
+
+        fileExtension = instrument.instrumentSetting.split('.').pop();
+        if (fs.existsSync(`./uploads/${board.code}/${req.params.song}/${req.params.instrument}-instrumentSetting.${fileExtension}`)) {
+            fs.unlinkSync(`./uploads/${board.code}/${song._id}/${instrument._id}-instrumentSetting.${fileExtension}`, err => {
+                if (err) return res.status(500).send(err);
+            });
+        }
+
+        await board.save();
+
+        const songs = board.songs;
         res.json(songs);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
 
+
+
+// UPDATE progress
+router.patch('/:code/:song/:instrument/editProgress', async (req, res) => {
+    try {
+        const board = await Board.findOne({ code: req.params.code })
+        const song = await board.songs.id( req.params.song )
+        const instrument = song.instruments.id(req.params.instrument);
+
+        instrument.progress = req.body.progress;
+
+        await board.save();
+        res.json(board.songs);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+
+
 // POST ampSetting to instrument
-router.post('/:song/:instrument/addAmpSetting', async (req, res) => {
+router.post('/:code/:song/:instrument/addAmpSetting', async (req, res) => {
     try{
+        const board = await Board.findOne({ code: req.params.code })
+
         if (req.files === null) return res.status(400).json({ message: 'No file uploaded' });
 
         const file = req.files.file;
@@ -74,7 +235,7 @@ router.post('/:song/:instrument/addAmpSetting', async (req, res) => {
         const fileExtension = file.name.split('.').pop();
         if (!['jpeg', 'jpg', 'png', 'heic'].includes(fileExtension.toLowerCase())) return res.status(400).json({ mesage: 'File type not supported' });
 
-        file.mv(`./uploads/${req.params.song}/${req.params.instrument}-ampSetting.${fileExtension}`, err => {
+        file.mv(`./uploads/${board.code}/${req.params.song}/${req.params.instrument}-ampSetting.${fileExtension}`, err => {
             if (err) return res.status(500).send(err);
             res.json({ message: 'File uploaded' });
         })
@@ -84,8 +245,10 @@ router.post('/:song/:instrument/addAmpSetting', async (req, res) => {
 });
 
 // POST instrumentSetting to instrument
-router.post('/:song/:instrument/addInstrumentSetting', async (req, res) => {
+router.post('/:code/:song/:instrument/addInstrumentSetting', async (req, res) => {
     try{
+        const board = await Board.findOne({ code: req.params.code })
+
         if (req.files === null) return res.status(400).json({ message: 'No file uploaded' });
 
         const file = req.files.file;
@@ -93,7 +256,7 @@ router.post('/:song/:instrument/addInstrumentSetting', async (req, res) => {
         const fileExtension = file.name.split('.').pop();
         if (!['jpeg', 'jpg', 'png', 'heic'].includes(fileExtension.toLowerCase())) return res.status(400).json({ mesage: 'File type not supported' });
 
-        file.mv(`./uploads/${req.params.song}/${req.params.instrument}-instrumentSetting.${fileExtension}`, err => {
+        file.mv(`./uploads/${board.code}/${req.params.song}/${req.params.instrument}-instrumentSetting.${fileExtension}`, err => {
             if (err) return res.status(500).send(err);
             res.json({ message: 'File uploaded' });
         })
@@ -102,143 +265,51 @@ router.post('/:song/:instrument/addInstrumentSetting', async (req, res) => {
     }
 });
 
-// UPDATE song in group
-router.patch('/:group/:song/editSong', async (req, res) => {
-    try {
-        if (req.body.name) {
-            await Song.findOneAndUpdate({ _id: req.params.song }, { name: req.body.name });
-        }
-        else if (req.body.group) {
-            await Song.findOneAndUpdate({ _id: req.params.song }, { group: req.body.group });
-        }
-        const songs = await Song.find();
-        res.json(songs);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
 
-// UPDATE instrument 
-router.patch('/:song/:instrument/editInstrument', async (req, res) => {
-    try {
-        const { name, type, ampSetting, instrumentSetting } = req.body;
-        const song = await Song.findById(req.params.song);
-        const instrument = song.instruments.id(req.params.instrument);
-        if (name) instrument.name = name;
-        if (type) instrument.type = type;
-        if (ampSetting) instrument.ampSetting = ampSetting;
-        if (instrumentSetting) instrument.instrumentSetting = instrumentSetting;
-        await song.save();
-
-        const songs = await Song.find();
-        res.json(songs);
-    }
-    catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// UPDATE progress
-router.patch('/:song/:instrument/editProgress', async (req, res) => {
-    try {
-        const song = await Song.findById(req.params.song);
-        const instrument = song.instruments.id(req.params.instrument);
-        instrument.progress = req.body.progress;
-        await song.save();
-        
-        const songs = await Song.find();
-        res.json(songs);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// DELETE song from group
-router.delete('/:group/:song/deleteSong', async (req, res) => {
-    try {
-        if (fs.existsSync(`./uploads/${req.params.song}`)) {
-            fs.rmdirSync(`./uploads/${req.params.song}`, { recursive: true });
-        }
-
-        await Song.findByIdAndDelete(req.params.song);
-        const songs = await Song.find();
-        res.json(songs);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// DELETE instrument
-router.delete('/:song/:instrument/deleteInstrument', async (req, res) => {
-    try {
-        const song = await Song.findById(req.params.song);
-        const instrument = song.instruments.id(req.params.instrument);
-        instrument.remove();
-
-        fileExtension = instrument.ampSetting.split('.').pop();
-        if (fs.existsSync(`./uploads/${req.params.song}/${req.params.instrument}-ampSetting.${fileExtension}`)) {
-            fs.unlinkSync(`./uploads/${song._id}/${instrument._id}-ampSetting.${fileExtension}`, err => {
-                if (err) return res.status(500).send(err);
-            });
-        }
-
-        fileExtension = instrument.instrumentSetting.split('.').pop();
-        if (fs.existsSync(`./uploads/${req.params.song}/${req.params.instrument}-instrumentSetting.${fileExtension}`)) {
-            fs.unlinkSync(`./uploads/${song._id}/${instrument._id}-instrumentSetting.${fileExtension}`, err => {
-                if (err) return res.status(500).send(err);
-            });
-        }
-
-        await song.save();
-        const songs = await Song.find();
-
-        res.json(songs);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
 
 // DELETE ampSetting
-router.delete('/:song/:instrument/deleteAmpSetting', async (req, res) => {
+router.delete('/:code/:song/:instrument/deleteAmpSetting', async (req, res) => {
     try {
-        const song = await Song.findById(req.params.song);
+        const board = await Board.findOne({ code: req.params.code })
+        const song = await board.songs.id( req.params.song )
         const instrument = song.instruments.id(req.params.instrument);
 
         const fileExtension = instrument.ampSetting.split('.').pop();
 
-        fs.unlinkSync(`./uploads/${song._id}/${instrument._id}-ampSetting.${fileExtension}`, err => {
+        fs.unlinkSync(`./uploads/${board.code}/${song._id}/${instrument._id}-ampSetting.${fileExtension}`, err => {
             if (err) return res.status(500).send(err);
         });
 
         instrument.ampSetting = 'false';
+        
+        await board.save();
 
-        await song.save();
-        const songs = await Song.find();
+        const songs = board.songs;
         res.json(songs);
-
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
 
 // DELETE instrumentSetting
-router.delete('/:song/:instrument/deleteInstrumentSetting', async (req, res) => {
+router.delete('/:code/:song/:instrument/deleteInstrumentSetting', async (req, res) => {
     try {
-        const song = await Song.findById(req.params.song);
+        const board = await Board.findOne({ code: req.params.code })
+        const song = await board.songs.id( req.params.song )
         const instrument = song.instruments.id(req.params.instrument);
 
         const fileExtension = instrument.instrumentSetting.split('.').pop();
 
-        fs.unlinkSync(`./uploads/${song._id}/${instrument._id}-instrumentSetting.${fileExtension}`, err => {
+        fs.unlinkSync(`./uploads/${board.code}/${song._id}/${instrument._id}-instrumentSetting.${fileExtension}`, err => {
             if (err) return res.status(500).send(err);
         });
 
         instrument.instrumentSetting = 'false';
         
-        await song.save();
-        const songs = await Song.find();
-        res.json(songs);
+        await board.save();
 
+        const songs = board.songs;
+        res.json(songs);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
