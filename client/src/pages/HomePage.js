@@ -9,13 +9,11 @@ import '../css/Home.scss'
 
 const CreateBoard = () => {
 
-    const { register, setError, clearErrors, formState: { errors } } = useForm();
+    const { setError, clearErrors, formState: { errors } } = useForm();
 
     const [open, setOpen] = useState(false);
     const [email, setEmail] = useState("")
     const [code, setCode] = useState("")
-
-    const emailReg = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 
     const getCode = () => {
         let charList = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
@@ -31,6 +29,7 @@ const CreateBoard = () => {
     }
 
     const onSubmit = async () => {
+        //eslint-disable-next-line
         let emailReg = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
         
         if (email === "" || email === undefined || !emailReg.test(email)) {
@@ -41,7 +40,7 @@ const CreateBoard = () => {
         let tempCode = getCode()
 
         try {
-            const res = await axios.post(`/api/addBoard`, {code: tempCode, email:email});
+            await axios.post(`/api/addBoard`, {code: tempCode, email:email});
             setCode(tempCode)
             clearErrors()
         }

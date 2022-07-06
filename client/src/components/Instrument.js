@@ -113,7 +113,7 @@ const Edit = ({code, song, setSongs, instrument, setEdit}) => {
 
                 if (ampSettingBool !== 'false' && ampSetting !== 'delete') {
 
-                    let song = res.data.find(song => song._id === song._id);
+                    let song = res.data.find(song => song._id);
                     let instrument = song.instruments.find(instrument => instrument._id === song.instruments[song.instruments.length - 1]._id);
     
                     const formData = new FormData();
@@ -129,7 +129,7 @@ const Edit = ({code, song, setSongs, instrument, setEdit}) => {
     
                 if (instrumentSettingBool !== 'false' && instrumentSetting !== 'delete') {
 
-                    let song = res.data.find(song => song._id === song._id);
+                    let song = res.data.find(song => song._id);
                     let instrument = song.instruments.find(instrument => instrument._id === song.instruments[song.instruments.length - 1]._id);
     
                     const formData = new FormData();
