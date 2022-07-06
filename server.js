@@ -5,6 +5,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const fileUpload = require('express-fileupload');
+const path = require('path')
 
 // EXPRESS
 const app = express();
@@ -18,6 +19,14 @@ app.use('/api', apiRouter);
 
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads'));
+
+// PRODUCTION
+if(process.env.NODE_ENV === 'production') {
+    app.use(express.static('client/build'));
+    app.get('*', (req, res) => {
+        res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+    })
+}
 
 // MONGODB
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true })
