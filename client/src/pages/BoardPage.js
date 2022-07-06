@@ -16,7 +16,7 @@ const BoardPage = () => {
   const [songs, setSongs] = useState([]);
 
   useEffect (() => {
-    const getSongs = async () => {
+    const getSongs = async (code) => {
       try {
         const res = await axios.get(`/api/${ code }/songs`);
         setSongs(res.data);
@@ -36,8 +36,8 @@ const BoardPage = () => {
     const sourceId = result.draggableId;
     const group = result.destination.droppableId;
     const source = result.source.droppableId;
-    const sourceIndex = result.source.index;
-    const destinationIndex = result.destination.index;
+    //const sourceIndex = result.source.index;
+    //const destinationIndex = result.destination.index;
 
     if (source !== group) {
       const song = songs.find(song => song._id === sourceId);

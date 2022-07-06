@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react'
-import { useDrop } from 'react-beautiful-dnd'
 import Modal from './Modal';
 
 import axios from 'axios';

@@ -39,7 +39,7 @@ const Form = ({code, setSongs, song}) => {
             setOpen(false);
 
             if (ampSettingName !== 'false') {
-                let song = res.data.find(song => song._id === song._id);
+                let song = res.data.find(song => song._id);
                 let instrument = song.instruments.find(instrument => instrument._id === song.instruments[song.instruments.length - 1]._id);
 
                 const formData = new FormData();
@@ -54,7 +54,7 @@ const Form = ({code, setSongs, song}) => {
             }
 
             if (instrumentSettingName !== 'false') {
-                let song = res.data.find(song => song._id === song._id);
+                let song = res.data.find(song => song._id);
                 let instrument = song.instruments.find(instrument => instrument._id === song.instruments[song.instruments.length - 1]._id);
 
                 const formData = new FormData();
