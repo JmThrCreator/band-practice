@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.css": "/static/css/main.7f8dc3b7.css",
+    "main.js": "/static/js/main.8fab5cc6.js",
+    "static/media/background.png": "/static/media/background.b1f2f63ec708388e2546.png",
+    "static/media/rhythm.svg": "/static/media/rhythm.ce3c08307ecfb77155c9369a617cdb0d.svg",
+    "static/media/amp.svg": "/static/media/amp.8d65a03606e65b108472c429581689a3.svg",
+    "static/media/lead.svg": "/static/media/lead.8ea94758dbebb269a89660dc361ce03e.svg",
+    "static/media/wind.svg": "/static/media/wind.dd13a9d55a3aa62e5affb9faf354e4c3.svg",
+    "static/media/bass.svg": "/static/media/bass.4fcf80e8bb82e773d49ba545547ca4a0.svg",
+    "static/media/keyboard.svg": "/static/media/keyboard.afa1f23eef782e4fe50aabdd6465275f.svg",
+    "static/media/notes.svg": "/static/media/notes.e7df3659baa326292bf42849ca0b7a3a.svg",
+    "static/media/drums.svg": "/static/media/drums.e3cdcbf7f3c3b4f84edce3642a1ba184.svg",
+    "static/media/vocals.svg": "/static/media/vocals.a7a6e27b7d03f1327cdea27c22670545.svg",
+    "static/media/edit.svg": "/static/media/edit.415742c0f1bdaa4840e32b61325717fb.svg",
+    "static/media/dials.svg": "/static/media/dials.bf2533d4d300b3c4a1c33a926198ca8f.svg",
+    "index.html": "/index.html",
+    "main.7f8dc3b7.css.map": "/static/css/main.7f8dc3b7.css.map",
+    "main.8fab5cc6.js.map": "/static/js/main.8fab5cc6.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.7f8dc3b7.css",
+    "static/js/main.8fab5cc6.js"
+  ]
+}
