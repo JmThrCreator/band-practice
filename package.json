@@ -11,13 +11,14 @@
     "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install yarn && npm install dotenv && yarn --cwd ./client install && yarn --cwd ./client build"
   },
   "keywords": [],
-  "author": "",
+  "author": "Jonathan Maggio",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.18.1",
     "express-fileupload": "^1.4.0",
-    "mongoose": "^6.3.6"
+    "mongoose": "^6.3.6",
+    "dotenv": "^16.0.1"
   },
   "devDependencies": {
     "concurrently": "^7.2.1",

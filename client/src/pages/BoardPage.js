@@ -16,7 +16,7 @@ const BoardPage = () => {
   const [songs, setSongs] = useState([]);
 
   useEffect (() => {
-    const getSongs = async (code) => {
+    const getSongs = async () => {
       try {
         const res = await axios.get(`/api/${ code }/songs`);
         setSongs(res.data);
@@ -25,7 +25,7 @@ const BoardPage = () => {
       }
     }
     getSongs();
-  }, []);
+  }, [code]);
 
   const filterSongs = (group) => {
     return songs.filter(song => song.group === group.name);
