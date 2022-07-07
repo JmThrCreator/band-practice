@@ -293,11 +293,11 @@ const Instrument = ({code, song, setSongs, instrument}) => {
 
                 { instrument.ampSetting !== 'false' ? (
                     <button className="amp-setting"><img src={ampIcon} alt="amp-setting" onClick={() => onOpenAmpSetting()}></img></button>
-                ) : ( <img className="amp-setting" style={{opacity:0}} src={ampIcon} alt="amp-setting"/> )}
+                ) : ( <img className="amp-setting" style={{opacity:0, width: 40px, height: 43px}} src={ampIcon} alt="amp-setting"/> )}
 
                 { instrument.instrumentSetting !== 'false' ? (
                 <button className="instrument-setting"><img  src={dialIcon} alt="instrument-setting" onClick={() => onOpenInstrumentSetting()}/></button>
-                ) : ( <img className="instrument-setting" style={{opacity:0}} src={dialIcon} alt="instrument-setting"/> )}
+                ) : ( <img className="instrument-setting" style={{opacity:0, width: 40px, height: 43px}} src={dialIcon} alt="instrument-setting"/> )}
 
                 <Menu code={code} song={song} setSongs={setSongs} instrument={instrument} setEdit={setEdit}/>
             </div>
