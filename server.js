@@ -16,7 +16,6 @@ app.use(express.json());
 // ROUTES
 const apiRouter = require('./routes/api');
 app.use('/api', apiRouter);
-
 app.use('/uploads', express.static('uploads'));
 
 // PRODUCTION
