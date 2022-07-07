@@ -23,7 +23,7 @@ app.use('/uploads', express.static('uploads'));
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static('client/build'));
 
-    app.get('/uploads', (req, res) => {
+    app.get('/uploads/:code/:setting', (req, res) => {
         app.use(express.static('public'))
     });
 
