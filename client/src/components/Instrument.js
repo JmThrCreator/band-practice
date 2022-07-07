@@ -210,11 +210,11 @@ const DisplaySetting = ({code, song, instrument, displaySetting, setDisplaySetti
     const getImage = () => {
         if (displaySetting === 'amp') {
             let fileExtension = instrument.ampSetting.split('.').pop();
-            return `https://127.0.0.1:8080/uploads/${code}/${song._id}/${instrument._id}-ampSetting.${fileExtension}`
+            return `/uploads/${code}/${song._id}/${instrument._id}-ampSetting.${fileExtension}`
         }
         else if (displaySetting === 'instrument') {
             let fileExtension = instrument.instrumentSetting.split('.').pop();
-            return `https://127.0.0.1:8080/uploads/${code}/${song._id}/${instrument._id}-instrumentSetting.${fileExtension}`
+            return `/uploads/${code}/${song._id}/${instrument._id}-instrumentSetting.${fileExtension}`
         }
     }
 
