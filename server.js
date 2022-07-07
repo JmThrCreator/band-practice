@@ -6,6 +6,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const fileUpload = require('express-fileupload');
 const path = require('path')
+const port = process.env.PORT || 8080;
 
 // EXPRESS
 const app = express();
@@ -30,7 +31,9 @@ if(process.env.NODE_ENV === 'production') {
 
 // MONGODB
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true })
-    .then(() => app.listen(8080, () => console.log('Server started'))
+
+    // START SERVER
+    .then(() => app.listen(port, () => console.log('Server started'))
 );
 
 // TEST CONNECTION
