@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form"
 
 import axios from 'axios';
 
+import logoIcon from '../images/logo.png';
+
 import { useNavigate } from "react-router-dom";
 
-import '../css/Home.scss'
+import '../scss/Home.scss'
 
 const CreateBoard = () => {
 
@@ -14,6 +16,10 @@ const CreateBoard = () => {
     const [open, setOpen] = useState(false);
     const [email, setEmail] = useState("")
     const [code, setCode] = useState("")
+
+    useEffect (() => {
+        document.body.classList.add('home-background');
+    },[]);
 
     const getCode = () => {
         let charList = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
@@ -132,8 +138,12 @@ const HomePage = () => {
 
     return (
         <div className="homepage">
+            <img className="logo" src={logoIcon}></img>
             <div className="title">
-                <h1>Band Practice</h1>
+                <h1>Taking care of the fundamentals.</h1>
+            </div>
+            <div className="description">
+                <p>A space for bands and musicians to organise and keep track of songs, progress and amp, instrument and pedal settings.</p>
             </div>
 
             <div className="buttons">

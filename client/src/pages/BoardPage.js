@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 
 import Group from '../components/Group';
 
-import '../css/Board.scss';
+import '../scss/Board.scss';
 
 import axios from 'axios';
 
@@ -16,6 +16,7 @@ const BoardPage = () => {
   const [songs, setSongs] = useState([]);
 
   useEffect (() => {
+    document.body.classList.add('board-background');
     const getSongs = async () => {
       try {
         const res = await axios.get(`/api/${ code }/songs`);

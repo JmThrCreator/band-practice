@@ -37,32 +37,11 @@ const boardSchema = new Schema({
                 progress: {
                     type: Number
                 },
-                ampSetting: {
-                    type: String
-                },
-                instrumentSetting: {
+                image: {
                     type: String
                 }
             }
-        ],
-
-        // NOTES
-        notes: {
-            type: String
-        },
-
-        // LINKS
-        links: [
-            {
-                name :{
-                    type: String
-                },
-                url: {
-                    type: String
-                }
-            }
-        ]
-        
+        ],     
     }]
 })
 

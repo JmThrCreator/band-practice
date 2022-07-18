@@ -1,42 +1,93 @@
-import React, {useState} from 'react'
+import React, { useState, useEffect } from 'react'
+
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 
 import axios from 'axios';
 
 import Song from './Song';
 
-const Form = ({code, setSongs, group}) => {
+const Add = ({code, setSongs, group}) => {
 
-    const [name, setName] = useState('');
     const [open, setOpen] = useState(false);
+    const template_dict = {
+        "none": {
+            name: "",
+            group: group.name
+        },
+        "4 rock": {
+            name: "",
+            group: group.name,
+            instruments: [
+                {
+                    name: "Drums",
+                    type: "Drums",
+                    progress: 0,
+                    image: "false",
+                },
+                {
+                    name: "Bass",
+                    type: "Bass",
+                    progress: 0,
+                    image: "false",
+                },
+                {
+                    name: "Lead",
+                    type: "Lead",
+                    progress: 0,
+                    image: "false",
+                },
+                {
+                    name: "Rhythm",
+                    type: "Rhythm",
+                    progress: 0,
+                    image: "false",
+                }
+            ]
+        },
+    }
 
-    const onSubmit = async () => {
-        if (name.length > 0) {
-            try {
-                const res = await axios.post(`/api/${code}/addSong`, {name: name, group: group.name});
-                setSongs(res.data);
-                setName('');
-                setOpen(false);
-            }
-            catch (err) {
-                console.log(err);
-            }
+    useEffect(() => {
+
+        let handler = (e) => {
+            if (e.target.id === `add-song-menu-${group._id}`) return
+            else if (e.target.id !== group._id) setOpen(false)
         }
-    };
+
+        document.addEventListener('click', handler);
+
+        return () => {
+            document.removeEventListener('click', handler);
+        }
+
+    });
+
+    const onSubmit = async (template) => {
+
+        let submitData = template_dict[template]
+
+        try {
+            const res = await axios.post(`/api/${code}/addSong`, submitData);
+            setSongs(res.data);
+
+        } catch (err) {
+            return;
+        }
+    };   
 
     return(
-        <>
-            <button className="add-song" onClick={() => setOpen(!open)}>
+        <div className="add-song-container">
+            <button className="add-song" onClick={() => onSubmit("none")}>
                 + Add Song
             </button>
 
-            <div className = "add-song-form">
-                <div className={open ? 'open' : 'closed'}>
-                    <input type="text" value={name} placeholder="Song name" onChange={e => setName(e.target.value)} />
-                    <button type="button" onClick={() => onSubmit()}>Add song</button>
-                </div>
+            <button id={`add-song-menu-${group._id}`} className="add-song-menu" onClick={() => setOpen(!open)}>...</button>
+        
+            <div id = {group._id} className={`add-song-menu-container-${open ? 'open' : 'closed'}`}>
+                <label>Templates</label>
+                <hr/>
+                <button className="add-song-menu-item" onClick={() => onSubmit("4 rock")}>4 Rock</button>
             </div>
-        </>
+        </div>
     )
 }
 
@@ -49,17 +100,17 @@ const Group = ({code, group, songs, setSongs}) => {
                     <div className="group" ref={provided.innerRef} {...provided.droppableProps} style={{background: snapshot.isDraggingOver ? 'rgb(210, 210, 210, 1)' : 'rgb(225, 225, 225, 1)'}}>
                         
                         <div className="group-header">
-                            {group.name}
+                            <h2>{group.name}</h2>
                         </div>     
                         
                         <div>
                             {songs.map((song, index) => {
                                 return (
                                     <Draggable key={song._id} draggableId={song._id} index={index}>
-                                            {(provided, snapshot) => {
+                                            {(provided) => {
                                                 return (
                                                     <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>    
-                                                            <Song key={song._id} code={code} song={song} setSongs={setSongs} group={group} songs={songs}/>
+                                                            <Song key={song._id} code={code} song={song} setSongs={setSongs}/>
                                                     </div>
                                                 )
                                             }}
@@ -69,7 +120,7 @@ const Group = ({code, group, songs, setSongs}) => {
                         </div>
 
                         <div className="group-footer">
-                            <Form code={code} setSongs={setSongs} group={group} />
+                            <Add code={code} setSongs={setSongs} group={group} />
                         </div>
 
                         {provided.placeholder}
@@ -78,6 +129,6 @@ const Group = ({code, group, songs, setSongs}) => {
             }}
         </Droppable>    
     );
-};
+}
 
 export default Group;

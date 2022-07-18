@@ -64,17 +64,31 @@ router.post('/:code/addSong', async (req, res) => {
 
         const board = await Board.findOne({ code: req.params.code });
 
-        board.songs.push({
-            name: name,
-            group: group
-        });
+        if (req.body.hasOwnProperty('instruments')) {
+            console.log("a")
+            board.songs.push({
+                name: name,
+                group: group,
+                instruments: req.body.instruments
+            });
+        }
+
+        else {
+            board.songs.push({
+                name: name,
+                group: group
+            });
+        }
 
         await board.save();
         const songs = board.songs;
 
         const song = board.songs.at(-1)
 
+
         if (!fs.existsSync(`./uploads/${board.code}/${song._id}`)) fs.mkdirSync(`./uploads/${board.code}/${song._id}`);
+
+        
 
         res.json(songs);
     } catch (err) {
@@ -126,19 +140,16 @@ router.delete('/:code/:song/deleteSong', async (req, res) => {
 // POST instrument
 router.post('/:code/:song/addInstrument', async (req, res) => {
     try {
-        const { name, type, ampSetting, instrumentSetting } = req.body;
+        const { name, type, image } = req.body;
         const progress = 0;
 
         const board = await Board.findOne({ code: req.params.code })
-
-        console.log(instrumentSetting)
 
         board.songs.id( req.params.song ).instruments.push ({
             name,
             type,
             progress,
-            ampSetting,
-            instrumentSetting
+            image
         });
 
         await board.save();
@@ -151,16 +162,14 @@ router.post('/:code/:song/addInstrument', async (req, res) => {
 // UPDATE instrument 
 router.patch('/:code/:song/:instrument/editInstrument', async (req, res) => {
     try {
-        const { name, type, ampSetting, instrumentSetting } = req.body;
-
         const board = await Board.findOne({ code: req.params.code })
         const song = await board.songs.id( req.params.song )
         const instrument = song.instruments.id(req.params.instrument);
         
-        if (name) instrument.name = name;
-        if (type) instrument.type = type;
-        if (ampSetting) instrument.ampSetting = ampSetting;
-        if (instrumentSetting) instrument.instrumentSetting = instrumentSetting;
+        if (req.body.hasOwnProperty('name')) instrument.name = req.body.name;
+        if (req.body.hasOwnProperty('type')) instrument.type = req.body.type;
+        if (req.body.hasOwnProperty('progress')) instrument.progress = req.body.progress;
+        if (req.body.hasOwnProperty('image')) instrument.image = req.body.image;
 
         await board.save();
         res.json(board.songs);
@@ -180,16 +189,10 @@ router.delete('/:code/:song/:instrument/deleteInstrument', async (req, res) => {
 
         instrument.remove();
 
-        fileExtension = instrument.ampSetting.split('.').pop();
-        if (fs.existsSync(`./uploads/${board.code}/${req.params.song}/${req.params.instrument}-ampSetting.${fileExtension}`)) {
-            fs.unlinkSync(`./uploads/${board.code}/${song._id}/${instrument._id}-ampSetting.${fileExtension}`, err => {
-                if (err) return res.status(500).send(err);
-            });
-        }
+        fileExtension = instrument.image.split('.').pop();
 
-        fileExtension = instrument.instrumentSetting.split('.').pop();
-        if (fs.existsSync(`./uploads/${board.code}/${req.params.song}/${req.params.instrument}-instrumentSetting.${fileExtension}`)) {
-            fs.unlinkSync(`./uploads/${board.code}/${song._id}/${instrument._id}-instrumentSetting.${fileExtension}`, err => {
+        if (fs.existsSync(`./uploads/${board.code}/${song._id}/${instrument._id}-image.${fileExtension}`)) {
+            fs.unlinkSync(`./uploads/${board.code}/${song._id}/${instrument._id}-image.${fileExtension}`, err => {
                 if (err) return res.status(500).send(err);
             });
         }
@@ -204,27 +207,8 @@ router.delete('/:code/:song/:instrument/deleteInstrument', async (req, res) => {
 });
 
 
-
-// UPDATE progress
-router.patch('/:code/:song/:instrument/editProgress', async (req, res) => {
-    try {
-        const board = await Board.findOne({ code: req.params.code })
-        const song = await board.songs.id( req.params.song )
-        const instrument = song.instruments.id(req.params.instrument);
-
-        instrument.progress = req.body.progress;
-
-        await board.save();
-        res.json(board.songs);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-
-
-// POST ampSetting to instrument
-router.post('/:code/:song/:instrument/addAmpSetting', async (req, res) => {
+// POST image to server
+router.post('/:code/:song/:instrument/addImage', async (req, res) => {
     try{
         const board = await Board.findOne({ code: req.params.code })
 
@@ -235,76 +219,30 @@ router.post('/:code/:song/:instrument/addAmpSetting', async (req, res) => {
         const fileExtension = file.name.split('.').pop();
         if (!['jpeg', 'jpg', 'png', 'heic'].includes(fileExtension.toLowerCase())) return res.status(400).json({ mesage: 'File type not supported' });
 
-        file.mv(`./uploads/${board.code}/${req.params.song}/${req.params.instrument}-ampSetting.${fileExtension}`, err => {
+        file.mv(`./uploads/${board.code}/${req.params.song}/${req.params.instrument}-image.${fileExtension}`, err => {
             if (err) return res.status(500).send(err);
             res.json({ message: 'File uploaded' });
         })
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// POST instrumentSetting to instrument
-router.post('/:code/:song/:instrument/addInstrumentSetting', async (req, res) => {
-    try{
-        const board = await Board.findOne({ code: req.params.code })
-
-        if (req.files === null) return res.status(400).json({ message: 'No file uploaded' });
-
-        const file = req.files.file;
-
-        const fileExtension = file.name.split('.').pop();
-        if (!['jpeg', 'jpg', 'png', 'heic'].includes(fileExtension.toLowerCase())) return res.status(400).json({ mesage: 'File type not supported' });
-
-        file.mv(`./uploads/${board.code}/${req.params.song}/${req.params.instrument}-instrumentSetting.${fileExtension}`, err => {
-            if (err) return res.status(500).send(err);
-            res.json({ message: 'File uploaded' });
-        })
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-
-
-// DELETE ampSetting
-router.delete('/:code/:song/:instrument/deleteAmpSetting', async (req, res) => {
-    try {
-        const board = await Board.findOne({ code: req.params.code })
-        const song = await board.songs.id( req.params.song )
-        const instrument = song.instruments.id(req.params.instrument);
-
-        const fileExtension = instrument.ampSetting.split('.').pop();
-
-        fs.unlinkSync(`./uploads/${board.code}/${song._id}/${instrument._id}-ampSetting.${fileExtension}`, err => {
-            if (err) return res.status(500).send(err);
-        });
-
-        instrument.ampSetting = 'false';
         
-        await board.save();
-
-        const songs = board.songs;
-        res.json(songs);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
 
-// DELETE instrumentSetting
-router.delete('/:code/:song/:instrument/deleteInstrumentSetting', async (req, res) => {
+// DELETE image from server
+router.delete('/:code/:song/:instrument/deleteImage', async (req, res) => {
     try {
         const board = await Board.findOne({ code: req.params.code })
         const song = await board.songs.id( req.params.song )
         const instrument = song.instruments.id(req.params.instrument);
 
-        const fileExtension = instrument.instrumentSetting.split('.').pop();
+        const fileExtension = instrument.image.split('.').pop();
 
-        fs.unlinkSync(`./uploads/${board.code}/${song._id}/${instrument._id}-instrumentSetting.${fileExtension}`, err => {
+        fs.unlinkSync(`./uploads/${board.code}/${song._id}/${instrument._id}-image.${fileExtension}`, err => {
             if (err) return res.status(500).send(err);
         });
 
-        instrument.instrumentSetting = 'false';
+        instrument.image = 'false';
         
         await board.save();
 

@@ -1,36 +1,47 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState, useRef} from 'react'
 import Modal from './Modal';
 
 import axios from 'axios';
 
-import editIcon from '../icons/edit.svg';
+const Song = ({code, song, setSongs}) => {
 
-const Song = ({code, song, setSongs, group, songs}) => {
-
-    const [edit, setEdit] = useState(false);
     const [open, setOpen] = useState(false);
+    const [name, setName] = useState(song.name);
+
+    const songRef = useRef(null);
 
     const onOpen = (event) => {
-        // log all elements that have been clicked
         if (event.target.className === 'song-menu') return;
         else if (event.target.className === 'show-song') setOpen(!open);
+    }
+    
+    const editName = async () => {
+        try {
+            const res = await axios.patch(`/api/${code}/${song._id}/editSong`, {name: name});
+            setSongs(res.data);
+
+        } catch (err) {
+            return;
+        }
+    }
+
+    const checkAutoFocus = () => {
+        if (name === "") return true;
     }
     
     return (
         <div key={song._id} className="song-container">
 
-        { edit === false ? (
-            <div className="show-song" onClick={(e) => onOpen(e)}>
-                <button key={song._id} className="song">
-                    {song.name} 
-                </button>
-                <Menu code={code} group={group} song={song} setEdit={setEdit} setSongs={setSongs}/>
-            </div>
-        ):(
-            <div className="song-edit">
-                <Edit code={code} song={song} setSongs={setSongs} group={group} setEdit={setEdit} songs={songs}/>
-            </div>
-        )}
+        <div className="show-song" onClick={(e) => onOpen(e)}>
+
+            <button className="song">
+                <input value={name} autoFocus={checkAutoFocus()} ref={songRef}
+                    onChange={(e) => setName(e.target.value)}
+                    onBlur = {() => editName()}
+                />
+            </button>
+            <Menu code={code} song={song} songRef={songRef} setSongs={setSongs}/>
+        </div>
 
         { open === true ? (
             <Modal code={code} song={song} setSongs={setSongs} open={open} setOpen={setOpen}/>
@@ -42,7 +53,7 @@ const Song = ({code, song, setSongs, group, songs}) => {
     )
 }
 
-const Menu = ({code, group, song, setEdit, setSongs}) => {
+const Menu = ({code, song, songRef, setSongs}) => {
 
     const [open, setOpen] = useState(false);
 
@@ -75,38 +86,10 @@ const Menu = ({code, group, song, setEdit, setSongs}) => {
             <button id={`song-menu-${song._id}`} className="song-menu" onClick={() => setOpen(!open)}>...</button>
 
             <div id = {song._id} className={`song-menu-container-${open ? 'open' : 'closed'}`}>
-                <button className="song-menu-item" onClick={() => setEdit(true)}>Edit</button>
+                <button className="song-menu-item" onClick={() => songRef.current.focus()}>Edit</button>
                 <button type="button" className="song-menu-item" onClick={() => onDelete()}>Delete</button>
             </div>
         </>
-    )
-}
-
-const Edit = ({code, song, setSongs, group, setEdit, songs}) => {
-    
-    const [name, setName] = useState(song.name);
-
-    const onSubmit = async () => {
-        if (name === song.name) {
-            setEdit(false);
-        }
-        else if (name.length > 0) {
-            try {
-                const res = await axios.patch(`/api/${code}/${song._id}/editSong`, {name: name});
-                setSongs(res.data);
-            } catch (err) {
-                console.log(err);
-            }
-        }
-    }
-
-    return(
-        <div className="edit-song">
-            <form>
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
-                <button type="button" onClick={() => onSubmit()}><img src={editIcon} alt="edit"/></button>
-            </form>
-        </div>
     )
 }
 
