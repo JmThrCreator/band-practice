@@ -112,8 +112,6 @@ body, html {
     font-weight: 500;
     color: grey;
 
-    z-index: 10;
-
     cursor: inherit;
 
     &:hover {
@@ -130,6 +128,8 @@ body, html {
     position: relative;
     bottom: 40px;
     left: 260px;
+
+    z-index: 10;
 
     @media screen and (max-width: 500px) {
         left: 120px;
