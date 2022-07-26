@@ -78,8 +78,6 @@ body, html {
     input {
         width: 150px;
 
-        position:relative;
-
         background:none;
         border:none;
 
@@ -113,6 +111,8 @@ body, html {
     font-size: 17px;
     font-weight: 500;
     color: grey;
+
+    z-index: 10;
 
     cursor: inherit;
 

@@ -279,6 +279,7 @@ const Instrument = ({code, song, setSongs, instrument}) => {
                         <input className="add-image" type="file"
                             onChange={
                                 event => {
+                                    console.log("a")
                                     onAddImage(event.target.files[0])
                                 }
                             }/>
