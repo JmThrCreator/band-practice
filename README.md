@@ -11,8 +11,8 @@ You can then move a song to the appropriate box.
 
 1. Install Node.js binary distribution: 
 https://github.com/nodesource/distributions/blob/master/README.md#debinstall](https://github.com/nodesource/distributions/blob/master/README.md#debinstall
-`curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -`
-`sudo apt-get install -y nodejs`
+`curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs`
 
 2. Install Yarn
 `sudo npm install -g yarn`
@@ -26,11 +26,11 @@ https://github.com/nodesource/distributions/blob/master/README.md#debinstall](ht
 `MONGODB_URI=[uri]`
 
 6. Install React dependencies
-`cd client`
-`yarn install`
-`yarn build`
+`cd client
+yarn install
+yarn build`
 
 7. Start
-`cd ..`
-`export NODE_ENV=production`
-`npm start`
+`cd ..
+export NODE_ENV=production
+npm start`
