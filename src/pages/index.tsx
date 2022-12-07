@@ -43,7 +43,7 @@ const Home: NextPage = () => {
 
         <div className="flex md:text-lg sm:text-base gap-5 my-10 font-mono">
           <button 
-            className={`text-gray-500 border-gray-300 border z-10 transition-all font-bold flex flex-col justify-center rounded bg-gray-200/40 py-2 px-4 md:py-3 md:px-6 duration-300 ${!buttonClicked ? "hover:bg-gray-200/100 cursor-pointer":"cursor-text select-text"}`}
+            className={`text-gray-500 border-gray-300 border z-10 transition-all font-bold flex flex-col justify-center rounded bg-gray-200/40 py-2 px-4 md:py-3 md:px-6 duration-300 ${!buttonClicked ? " hover:bg-gray-300/40 cursor-pointer":"cursor-text select-text"}`}
             onClick={ async () => 
               {
                 if (!buttonClicked) {

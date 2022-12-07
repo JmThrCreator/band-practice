@@ -4,6 +4,12 @@
 
 @layer utilities {
 
+  @media (min-width: 1450px) {
+    .board-scroll {
+      justify-content: center;
+    }
+  }
+
   .scrollbar-x::-webkit-scrollbar {
 
       height: 0.5em;
@@ -12,8 +18,7 @@
   
   .scrollbar-x::-webkit-scrollbar-track {
     border-radius: 100vw;
-    background: #f3f4f6;
-    
+    background: transparent;
   }
 
   .scrollbar-x::-webkit-scrollbar-thumb {
@@ -23,7 +28,6 @@
 
   .scrollbar-x::-webkit-scrollbar-thumb:hover {
     background: #e1e1e1;
-
   }
 
   .scrollbar-y::-webkit-scrollbar {
@@ -33,7 +37,7 @@
 
   .scrollbar-y::-webkit-scrollbar-track {
     border-radius: 100vw;
-    background: white;
+    background: transparent;
   }
 
   .scrollbar-y::-webkit-scrollbar-thumb {

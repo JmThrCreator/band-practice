@@ -1,11 +1,12 @@
 import type { NextPage } from "next";
+import Error from "next/error"
 import Head from "next/head";
 import { trpc } from "../../utils/trpc";
 import { useState, useEffect, useRef, Fragment } from "react";
 import { Listbox, Dialog, Transition, Tab } from '@headlessui/react';
-import { MagnifyingGlassIcon, ChevronDownIcon, CheckIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/solid';
-import { PlusIcon } from '@heroicons/react/20/solid';
-import { CheckCircleIcon, Cog6ToothIcon, AcademicCapIcon, QuestionMarkCircleIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, CheckIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/solid';
+import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid';
+import { CheckCircleIcon, Cog6ToothIcon, AcademicCapIcon, QuestionMarkCircleIcon, TagIcon, UsersIcon } from '@heroicons/react/24/outline';
 import BassIcon from "../../assets/icons/bass.svg"
 import DrumsIcon from "../../assets/icons/drums.svg"
 import KeyboardIcon from "../../assets/icons/keyboard.svg"
@@ -25,6 +26,8 @@ const Page: NextPage = () => {
   const router = useRouter()
   const code = (typeof router.query.code === "string")  ? router.query.code : ""
 
+  const validateCode = trpc.code.validateCode.useQuery({ code:code })
+  
   const stageList = trpc.page.getStageList.useQuery()
   const progressList = trpc.page.getProgressList.useQuery()
   const playerList = trpc.page.getPlayerList.useQuery({ code:code })
@@ -77,6 +80,8 @@ const Page: NextPage = () => {
     setActiveSong(undefined)
   }
 
+  if (validateCode.data !== undefined && validateCode.data !== null && validateCode.data === false) return(<><Error statusCode={404}/></>)
+  else {
   return (
     <div className="bg-gray-100">
       <Head>
@@ -85,7 +90,7 @@ const Page: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="container flex min-h-screen max-w-full flex-col py-10 bg-gray-100">
+      <main className="container flex min-h-screen max-w-full relative flex-col py-10 bg-gray-100">
 
         <div 
           className="absolute pointer-events-none inset-0" 
@@ -97,24 +102,25 @@ const Page: NextPage = () => {
           style={{backgroundImage:"linear-gradient(rgba(0, 0, 0, .02) .1em, transparent .1em), linear-gradient(90deg, rgba(0, 0, 0, .02) .1em, transparent .1em); background-size: 2em 2em;", maskImage:"radial-gradient(black, transparent);-webkit-mask-image:radial-gradient(black, transparent)"}}
         />
 
-        <div className="flex sm:mx-auto sm:items-center gap-5 flex-col px-5">
+        <div className="flex sm:mx-auto sm:items-center gap-3 flex-col px-5">
           <div className="gap-2 items-center sm:flex">
-            <div className="flex items-center">
+            <div className="flex">
 
               { playerList.data && <PlayerModal code={code} playerList={playerList.data}/> }
 
               <button
-                className={`py-1 px-3 rounded text-gray-500`}
+                className={`py-1 px-3 rounded flex font-semibold items-center gap-2 ${showTags ? "text-black" : "text-gray-500"}`}
                 onClick={ () => {
                   setShowTags(!showTags)
                 }}
               >
+                <TagIcon className="w-5 " strokeWidth={1.75}/>
                 Filter
               </button>
             </div>
             
             <div className="p-[0.4rem] transition-all flex items-center gap-3">
-              <MagnifyingGlassIcon className="h-6 w-6 text-gray-500"/>
+              <MagnifyingGlassIcon className="w-5 text-gray-500"/>
               <input 
                 value={search}
                 onChange={(e) => {setSearch(e.target.value)}}
@@ -131,24 +137,24 @@ const Page: NextPage = () => {
           
         </div>
 
-        <section className=" md-px-10 px-5 flex-1 flex justify-center">
-          <div className=" grid py-10 gap-10 grid-flow-col overflow-x-auto overflow-y-hidden overscroll-contain scrollbar-x auto-cols-min">
-            <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart} sensors={sensors}>
-              { stageList.data && stageList.data.map((group:{id:number, name:string}) => (
-                <Group code={code} activeSong={activeSong} group={group} key={group.id} songList={songList.data} activeProgressTags={activeProgressTags} activePlayerTags={activePlayerTags} search={search}/>
-              ))}
-              <DragOverlay>
-                {activeSong ? <Song code={code} song={activeSong} activeProgressTags={activeProgressTags} activePlayerTags={activePlayerTags} search={search}/> : null}
-              </DragOverlay>
-            </DndContext>
+        <section className="flex flex-1 board-scroll mx-10 relative overflow-x-auto scrollbar-x overscroll-contain auto-cols-min">
+            <div className="absolute pb-10 whitespace-nowrap top-0 bottom-0 mt-10">
+              <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart} sensors={sensors}>
+                { stageList.data && stageList.data.map((group:{id:number, name:string}) => (
+                  <Group code={code} activeSong={activeSong} group={group} key={group.id} songList={songList.data} activeProgressTags={activeProgressTags} activePlayerTags={activePlayerTags} search={search}/>
+                ))}
+                <DragOverlay>
+                  {activeSong ? <Song code={code} song={activeSong} activeProgressTags={activeProgressTags} activePlayerTags={activePlayerTags} search={search}/> : null}
+                </DragOverlay>
+              </DndContext>
             </div>
-
         </section>
 
       </main>
 
     </div>
   );
+  }
 };
 
 export default Page;
@@ -169,8 +175,8 @@ const Tag = ({
   
   return (
     <div>
-      <Listbox value={activeTags} onChange={setActiveTags} as="div" className="flex flex-col items-center" multiple>
-        <Listbox.Button className="z-10 rounded-full bg-gray-200 px-4 py-0.5 text-gray-500 flex items-center gap-2">
+      <Listbox value={activeTags} onChange={setActiveTags} as="div" className="flex flex-col sm:items-center" multiple>
+        <Listbox.Button className={`z-10 font-semibold rounded-full ${activeTags.length > 0 ? "bg-sky-100/50 text-sky-500 border-sky-300/60" : "bg-white/40 text-gray-500 border-gray-300/70" }   border px-4 py-0.5  flex items-center gap-2`}>
           {name}
           <ChevronDownIcon strokeWidth={1.75} className="w-4 h-4 mt-0.5"/>
         </Listbox.Button>
@@ -182,7 +188,7 @@ const Tag = ({
               as="button"
               value={option.name}
               disabled={false}
-              className="text-left flex items-center rounded py-1 px-2 w-full hover:bg-gray-100 ui-selected:bg-sky-400/10"
+              className="text-left flex items-center rounded py-1 px-2 w-full hover:bg-gray-100 ui-selected:text-sky-500 ui-selected:bg-sky-400/10"
             >
               {option.name}
               <CheckIcon className="invisible ml-auto text-sky-500 ui-selected:visible w-6 px-1" />
@@ -196,30 +202,6 @@ const Tag = ({
     
   );
 };
-
-/*type SortProps = {
-  name: string;
-  isSort: boolean;
-  setSort: React.Dispatch<React.SetStateAction<string>>;
-};
-
-const Sort = ({
-  name,
-  isSort,
-  setSort,
-}: SortProps) => {
-  return (
-    <li>
-      <button 
-        className={`rounded-full py-1 px-5 ${isSort ? "text-sky-500 bg-sky-400/10" : "text-gray-500 bg-gray-200"}`}
-        onClick={() => {setSort(name)}}
-      >
-        {name}
-      </button>
-    </li>
-  );
-};
-*/
 
 type GroupProps = {
   code: string;
@@ -271,9 +253,11 @@ const Group = ({
     id: group.id,
   });
 
+  //h-[15rem] md:h-[18rem] xl:h-[20rem] 2xl:h-[30rem]
+
   return (
-    <div ref={setNodeRef} className={`p-5 z-10 flex w-80 ${ isOver ? "bg-[#f5f7f8]/40" : "bg-white/40"} rounded-xl border flex-col shadow-lg shadow-black/5`}>
-      <div className="font-bold text-xl mb-5 h-max flex text-gray-700 items-center">
+    <div ref={setNodeRef} className={`p-5 pb-20 h-full inline-block whitespace-nowrap align-top mr-5 z-10 w-80 ${ isOver ? "bg-[#f5f7f8]/40" : "bg-white/40"} rounded-xl border shadow-black/5`}>
+      <div className="font-bold text-xl mb-5 flex text-gray-700 items-center">
         { group.name }
         <button 
           className="ml-auto"
@@ -291,7 +275,9 @@ const Group = ({
           </div>
         </button>
       </div>
-      <div className="overscroll-contain scrollbar-y overflow-y-auto pr-3">
+
+      <div className="overscroll-contain scrollbar-y pr-3 overflow-y-auto h-full">
+
         <div className="flex flex-col gap-3 pb-5">
         { filteredList && filteredList.length > 0 && filteredList.map(song => (
           <React.Fragment key={song.id}>
@@ -309,6 +295,7 @@ const Group = ({
         ))}
         </div>
       </div>
+
     </div>
   );
 };
@@ -464,7 +451,7 @@ const Song = ({
     {
       filterTags() &&
       <div
-      className="text-left relative p-2 h-12 bg-white rounded hover:bg-gray-100 flex items-start cursor-pointer border shadow-lg shadow-black/5" 
+      className="text-left relative p-2 h-12 bg-white rounded hover:bg-gray-100 flex items-start cursor-pointer border shadow-black/5" 
       onMouseOver={() => {setMouseEnter(true)}}
       onMouseOut={() => {setMouseEnter(false)}}
       ref={setNodeRef} style={style} {...listeners} {...attributes}
@@ -913,11 +900,12 @@ const PlayerModal = ({
   return (
     <div>
       <button 
-        className="py-1 px-3 rounded text-gray-500"
+        className={`py-1 px-3 items-center rounded ${isOpen ? "text-black" : "text-gray-500"} font-semibold flex gap-2`}
         onClick={ () => {
           setIsOpen(true)
         }}
       >
+        <UsersIcon className="w-5" strokeWidth={1.75}/>
         Players
       </button>
 
@@ -963,7 +951,7 @@ const PlayerModal = ({
                 </Dialog.Title>
                 <Tab.Group defaultIndex={1} selectedIndex={selectedPlayerIndex} onChange={setSelectedPlayerIndex}>
                   <Tab.List className="w-fit flex mt-3 p-1 justify-center gap-1 bg-gray-500/10 rounded-full">
-                    <Tab className="px-4 py-0.5 ui-selected:bg-white hover:bg-white/20 rounded-full">Default</Tab>
+                    <Tab className={`px-4 py-0.5 ui-selected:bg-white  hover:bg-white/20 rounded-full`}>Default</Tab>
                     <Tab className="px-4 py-0.5 ui-selected:bg-white hover:bg-white/20 rounded-full">Auxiliary</Tab>
                   </Tab.List>
 
