@@ -1,6 +1,5 @@
 import { t } from "../trpc";
-import { number, z } from "zod";
-import { resolve } from "path";
+import { z } from "zod";
 
 export const songEntryRouter = t.router({
     getSongEntryList: t.procedure

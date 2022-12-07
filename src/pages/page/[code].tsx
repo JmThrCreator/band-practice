@@ -16,8 +16,6 @@ import { useRouter } from 'next/router'
 import React from 'react'
 import {DndContext, useDroppable, useDraggable, DragOverlay, MouseSensor, useSensor, useSensors} from '@dnd-kit/core';
 import {CSS} from '@dnd-kit/utilities';
-import {forwardRef} from 'react';
-import JSXStyle from "styled-jsx/style";
 
 const Page: NextPage = () => {
 
@@ -57,17 +55,19 @@ const Page: NextPage = () => {
     mouseSensor,
   );
 
+  // eslint-disable-next-line
   function handleDragStart(event:any) {
     const {active} = event;
     setActiveSong(active.data.current.song)
   }
 
+  // eslint-disable-next-line
   function handleDragEnd(event:any) {
     const {active, over} = event;
     if (active && over)
       if (songList && songList.data !== undefined) {
-        let index = songList.data.findIndex((x => x.id == active.id))
-        let song = songList.data[index]
+        const index = songList.data.findIndex((x => x.id == active.id))
+        const song = songList.data[index]
         if (song !== undefined) song.stage.id = over.id
       }
       if (over !== null) {
@@ -342,7 +342,7 @@ const Song = ({
   
       let minProgress = songEntryList.length > 0 ? 1 : 4;
       for (let i=0; i<songEntryList.length; i++) {
-        let progressId = songEntryList[i]?.progress.id
+        const progressId = songEntryList[i]?.progress.id
         if (progressId !== undefined && progressId > minProgress) {
           minProgress = progressId
         }
@@ -376,6 +376,7 @@ const Song = ({
     if (textRef.current === null) return
     else if (song.name==="") textRef.current.disabled = false
     else textRef.current.disabled = true
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   },[])
 
   const checkAutoFocus = () => {
@@ -413,17 +414,17 @@ const Song = ({
     // filters players
     if (activePlayerTags.length > 0 && songEntryList !== undefined) {
       for (const songEntry of songEntries){
-        let playerName = songEntry?.player?.name
+        const playerName = songEntry?.player?.name
         if (typeof playerName === "string" && activePlayerTags.indexOf(playerName) >= 0) {
 
           // if player list contains 1 player, apply that player's progress to the songs
           if (activePlayerTags.length === 1) {
-            let progressName = songEntry.progress?.name
+            const progressName = songEntry.progress?.name
             if (progress !== progressName && typeof progressName === "string") setProgress(progressName)
 
             // filter tags to the player's progress
             if (activeProgressTags.length > 0) {
-              for (let progressTag of activeProgressTags) {
+              for (const progressTag of activeProgressTags) {
                 if (typeof progressName === "string" && typeof progressTag !== undefined && progressName === progressTag) break
                 if (activeProgressTags.indexOf(progressTag) === activeProgressTags.length-1) return false
               }
@@ -437,7 +438,7 @@ const Song = ({
     
     // filters default progress if there are multiple or no players
     if (activeProgressTags.length > 0 && activePlayerTags.length !== 1) {
-      for (let progressTag of activeProgressTags){
+      for (const progressTag of activeProgressTags){
         if (typeof progressTag !== undefined && progressTag === song.progress.name) break;
         if (activeProgressTags.indexOf(progressTag) === activeProgressTags.length-1) return false
       }
@@ -486,14 +487,14 @@ const Song = ({
               ${name==="Undefined" && "text-gray-400"}`
             }
             onChange={(e) => { setName(e.target.value)} }
-            onSelect={(e) => {
+            onSelect={() => {
               if (name==="Undefined") setName("")
             }}
             onKeyPress = {(e) => {
               if (e.key !== "Enter") return;
               else if (textRef.current !== null) textRef.current.blur();
             }}
-            onBlur = {(e) => {
+            onBlur = {() => {
               if (textRef.current !== null) textRef.current.disabled = true
               if (!name || name==="") {
                 editSongName.mutateAsync({ id:song.id, name:"Undefined" })
@@ -770,7 +771,7 @@ const SongEntry = ({
               ${name==="Undefined" && "text-gray-400"}`
             }
             onChange={(e) => { setName(e.target.value)} }
-            onSelect={(e) => {
+            onSelect={() => {
               if (name==="Undefined") setName("")
             }}
             onKeyPress = {(e) => {
@@ -959,14 +960,14 @@ const PlayerModal = ({
                     <Tab.Panel className="flex flex-col gap-3">
                       { playerList && playerList.map((player) => (
                         <React.Fragment key={player.id}>
-                          { player.default && <Player code={code} player={player} /> }
+                          { player.default && <Player player={player} /> }
                         </React.Fragment>
                       ))}
                     </Tab.Panel>
                     <Tab.Panel className="flex flex-col gap-3">
                       { playerList && playerList.map((player) => (
                         <React.Fragment key={player.id}>
-                        { player.default === false && <Player code={code} player={player} key={player.id}/> }
+                        { player.default === false && <Player player={player} key={player.id}/> }
                         </React.Fragment>
                       ))}
                     </Tab.Panel>
@@ -983,7 +984,6 @@ const PlayerModal = ({
 }
 
 type PlayerProps = {
-  code:string;
   player: {
     id:string;
     instrumentId:number;
@@ -993,7 +993,6 @@ type PlayerProps = {
 }
 
 const Player = ({
-  code,
   player,
 }: PlayerProps) => {
 
@@ -1095,7 +1094,7 @@ const Player = ({
               ${name==="Undefined" && "text-gray-400"}`
             }
             onChange={(e) => { setName(e.target.value)} }
-            onSelect={(e) => {
+            onSelect={() => {
               if (name==="Undefined") setName("")
             }}
             onKeyPress = {(e) => {

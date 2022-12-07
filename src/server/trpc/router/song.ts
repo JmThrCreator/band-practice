@@ -1,6 +1,5 @@
 import { t } from "../trpc";
 import { z } from "zod";
-import { resolve } from "path";
 
 export const songRouter = t.router({
     getSongs: t.procedure
@@ -22,8 +21,8 @@ export const songRouter = t.router({
             })
             return(songList.sort(
                 function(a, b) {
-                    var textA = a.name.toUpperCase();
-                    var textB = b.name.toUpperCase();
+                    const textA = a.name.toUpperCase();
+                    const textB = b.name.toUpperCase();
                     return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
                 }
             ))
@@ -77,9 +76,9 @@ export const songRouter = t.router({
                 });
                 
                 for (let i=0; i<defaultPlayerList.length; i++) {
-                    let player = defaultPlayerList[i]
+                    const player = defaultPlayerList[i]
                     if (player !== undefined && player.default) {
-                        let instrument = await ctx.prisma.instrument.findFirst({
+                        const instrument = await ctx.prisma.instrument.findFirst({
                             where: {
                                 id:player.instrumentId
                             }
