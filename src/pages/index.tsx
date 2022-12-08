@@ -12,8 +12,6 @@ const Home: NextPage = () => {
   const [buttonClicked, setButtonClicked] = useState(false);
   const [customLink, setCustomLink] = useState("");
 
-  const url = "localhost:3000/page/"
-
   return (
     <div className="bg-gray-100">
       <Head>
@@ -47,7 +45,7 @@ const Home: NextPage = () => {
             onClick={ async () => 
               {
                 if (!buttonClicked) {
-                  setCustomLink(url + await getCode.mutateAsync());
+                  setCustomLink(window.location.origin + await getCode.mutateAsync());
                   setButtonClicked(true)
                 }
               }
