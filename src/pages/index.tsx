@@ -45,7 +45,7 @@ const Home: NextPage = () => {
             onClick={ async () => 
               {
                 if (!buttonClicked) {
-                  setCustomLink(window.location.origin + await getCode.mutateAsync());
+                  setCustomLink(window.location.origin + "/page/" + await getCode.mutateAsync());
                   setButtonClicked(true)
                 }
               }
